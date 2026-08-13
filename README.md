@@ -10,6 +10,10 @@ In this project, I was responsible for **web app development and service plannin
 
 AnjeonMo is a project designed to promote safer use of shared electric scooters by detecting unsafe behaviors such as **riding with two or more people** and **riding without a helmet**. It also allows parents or guardians to check their children's riding status and safety records.
 
+The name **“AnjeonMo (안전母)”** has two meanings. In Korean, **“안전모 (anjeonmo)” means “safety helmet,”** representing the project's goal of physically protecting users from accidents. At the same time, the character **“母 (mo)” means “mother,”** representing the idea of protecting users with the same care and concern that a mother has for her child.
+
+In other words, the name combines the idea of a **safety helmet that protects the rider** with the **protective care of a mother watching over her child**.
+
 When planning this project, we focused on **solving a real-world problem** rather than simply creating new features.
 
 We selected shared electric scooter accidents as the main problem and created fictional personas to define the problem and target users more clearly.
@@ -215,6 +219,10 @@ A team project created to improve the safety of shared electric scooter users an
 ## 프로젝트 소개
 
 안전母(모)는 공유 전동 킥보드 이용 중 발생할 수 있는 **2인 이상 탑승**과 **헬멧 미착용** 문제를 감지하여 보다 안전한 이용을 돕고, 보호자가 자녀의 이용 상태와 안전 기록을 확인할 수 있도록 기획한 프로젝트입니다.
+
+프로젝트명 **‘안전母(모)’**에는 두 가지 의미가 담겨 있습니다.첫 번째는 머리를 보호하는 **‘안전모’**처럼 사용자를 사고로부터 보호한다는 의미이고, 두 번째는 어머니를 뜻하는 한자 **‘母(모)’**를 사용하여 어머니가 자녀를 걱정하고 지켜주는 마음처럼 사용자의 안전을 보호한다는 의미입니다.
+
+즉, **사용자를 직접적으로 보호하는 ‘안전모’와 자녀의 안전을 걱정하는 ‘어머니의 마음’**이라는 두 가지 의미를 하나의 이름에 담았습니다.
 
 프로젝트를 기획할 때 단순히 새로운 기능을 만드는 것보다 **실생활에서 실제로 발생하고 있는 문제를 해결하는 것**에 초점을 맞췄습니다.
 
