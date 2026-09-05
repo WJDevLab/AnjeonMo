@@ -1,7 +1,6 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
-import { sites } from "./build/sites-vite-plugin";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
@@ -42,6 +41,18 @@ export default defineConfig(async () => {
 
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
+
+  // `build/sites-vite-plugin` is injected by the hosting platform this
+  // template was scaffolded from; it isn't part of the repo (build/ is
+  // gitignored), so it's absent for local dev, other CI, and this fork.
+  // Fall back to a no-op plugin instead of failing config load outright.
+  let sites = () => ({ name: "sites-vite-plugin-noop" });
+  try {
+    // @ts-ignore — only resolvable on the original hosting platform, see comment above.
+    ({ sites } = await import("./build/sites-vite-plugin"));
+  } catch {
+    // Not present outside the original hosting platform — see comment above.
+  }
 
   return {
     server: isCodexSeatbeltSandbox
