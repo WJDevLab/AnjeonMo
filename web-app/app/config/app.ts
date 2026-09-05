@@ -1,6 +1,5 @@
 export const APP_NAME = "";
 export const APP_DISPLAY_NAME = APP_NAME || "앱 이름";
-export const SAFETY_STABLE_DURATION_MS = 2_500;
 
 export const ROUTES = {
   welcome: "/",
@@ -13,4 +12,6 @@ export const ROUTES = {
   payment: "/payment",
   profile: "/profile",
   statistics: "/statistics",
+  friends: "/friends",
+  friendDetail: "/friends/:friendId",
 } as const;

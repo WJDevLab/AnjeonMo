@@ -1,22 +1,68 @@
 "use client";
 
-import { BarChart3, ChevronRight, CreditCard, History, ShieldCheck, UserRound } from "lucide-react";
+import { useMemo, useState } from "react";
+import { BarChart3, ChevronRight, Clock3, CreditCard, History, MapPinned, ShieldAlert, ShieldCheck, UserRound, WalletCards } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell, SectionTitle, SurfaceCard, TopBar } from "../components/AppShell";
+import { Calendar } from "../components/Calendar";
+import { MonthlyTrendChart } from "../components/MonthlyTrendChart";
 import { ROUTES } from "../config/app";
-import { EMPTY_RIDE_STATISTICS } from "../types/domain";
-import { formatDuration, formatMetric } from "../utils/format";
+import { getAllRideRecords, getMonthlyAggregate, getOverallAggregate } from "../data/rideHistoryStore";
+import { formatDayHeading, toDateKey } from "../utils/date";
+import { formatDuration, formatFare, formatMetric } from "../utils/format";
 
 export function HistoryPage() {
+  const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
+  const records = useMemo(() => getAllRideRecords(), []);
+  const markedDates = useMemo(() => new Set(records.map((record) => record.dateKey)), [records]);
+  const dayRecords = useMemo(() => records.filter((record) => record.dateKey === selectedDate), [records, selectedDate]);
+
   return (
     <AppShell bottomNavigation>
       <TopBar title="이용내역" />
-      <div className="page-content utility-content">
-        <SurfaceCard className="empty-state-card">
-          <span className="round-icon"><History aria-hidden="true" /></span>
-          <h2>아직 이용 기록이 없어요</h2>
-          <p>주행을 마치면 이용 내역이 여기에 표시돼요.</p>
-        </SurfaceCard>
+      <div className="page-content history-content">
+        <Calendar markedDates={markedDates} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+
+        <section className="content-section">
+          <SectionTitle>{formatDayHeading(selectedDate)}</SectionTitle>
+          {dayRecords.length === 0 ? (
+            <SurfaceCard className="empty-state-card">
+              <span className="round-icon"><History aria-hidden="true" /></span>
+              <h2>이 날짜엔 이용 기록이 없어요</h2>
+              <p>달력에서 점이 표시된 날짜를 선택해 보세요.</p>
+            </SurfaceCard>
+          ) : (
+            <div className="day-record-list">
+              {dayRecords.map((record) => (
+                <SurfaceCard key={record.id} className="day-record-item">
+                  <div className="day-record-row">
+                    <span><MapPinned aria-hidden="true" />주행 거리</span>
+                    <strong>{formatMetric(record.distanceKm, "km")}</strong>
+                  </div>
+                  <div className="day-record-row">
+                    <span><Clock3 aria-hidden="true" />이용 시간</span>
+                    <strong>{formatDuration(record.durationSeconds)}</strong>
+                  </div>
+                  <div className="day-record-row">
+                    <span><WalletCards aria-hidden="true" />이용 요금</span>
+                    <strong>{formatFare(record.fareAmount, record.currencyCode)}</strong>
+                  </div>
+                  {record.multiRiderBlockedCount > 0 || record.helmetBlockedCount > 0 ? (
+                    <div className="day-record-safety">
+                      <ShieldAlert aria-hidden="true" />
+                      <span>
+                        {[
+                          record.multiRiderBlockedCount > 0 ? `2인 이상 탑승 제한 ${record.multiRiderBlockedCount}회` : null,
+                          record.helmetBlockedCount > 0 ? `헬멧 미착용 제한 ${record.helmetBlockedCount}회` : null,
+                        ].filter(Boolean).join(" · ")}
+                      </span>
+                    </div>
+                  ) : null}
+                </SurfaceCard>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </AppShell>
   );
@@ -61,14 +107,19 @@ export function ProfilePage() {
 }
 
 export function StatisticsPage() {
-  const stats = EMPTY_RIDE_STATISTICS;
+  const [period, setPeriod] = useState<"month" | "all">("month");
+  const stats = useMemo(() => {
+    const now = new Date();
+    return period === "month" ? getMonthlyAggregate(now.getFullYear(), now.getMonth()) : getOverallAggregate();
+  }, [period]);
+
   return (
     <AppShell>
       <TopBar title="주행 통계" back />
       <div className="page-content stats-content">
         <div className="period-selector" role="group" aria-label="통계 기간">
-          <button className="is-active" type="button" aria-pressed="true">이번 달</button>
-          <button type="button" aria-pressed="false">전체</button>
+          <button className={period === "month" ? "is-active" : ""} type="button" aria-pressed={period === "month"} onClick={() => setPeriod("month")}>이번 달</button>
+          <button className={period === "all" ? "is-active" : ""} type="button" aria-pressed={period === "all"} onClick={() => setPeriod("all")}>전체</button>
         </div>
 
         <section className="content-section">
@@ -83,11 +134,17 @@ export function StatisticsPage() {
 
         <section className="content-section">
           <SectionTitle>주행 추이</SectionTitle>
-          <SurfaceCard className="chart-empty">
-            <BarChart3 aria-hidden="true" />
-            <strong>표시할 주행 기록이 없어요</strong>
-            <p>실제 기록이 쌓이면 월별 추이를 확인할 수 있어요.</p>
-          </SurfaceCard>
+          {stats.dailyDistanceKm.length === 0 ? (
+            <SurfaceCard className="chart-empty">
+              <BarChart3 aria-hidden="true" />
+              <strong>표시할 주행 기록이 없어요</strong>
+              <p>실제 기록이 쌓이면 추이를 확인할 수 있어요.</p>
+            </SurfaceCard>
+          ) : (
+            <SurfaceCard className="trend-chart-card">
+              <MonthlyTrendChart points={stats.dailyDistanceKm} />
+            </SurfaceCard>
+          )}
         </section>
 
         <section className="content-section">
@@ -102,10 +159,25 @@ export function StatisticsPage() {
 
         <section className="content-section">
           <SectionTitle>최근 이용 내역</SectionTitle>
-          <SurfaceCard className="empty-inline recent-empty">
-            <span className="round-icon"><ShieldCheck aria-hidden="true" /></span>
-            <div><strong>최근 이용 기록이 없어요</strong><p>주행을 마치면 기록이 표시돼요.</p></div>
-          </SurfaceCard>
+          {stats.recentRides.length === 0 ? (
+            <SurfaceCard className="empty-inline recent-empty">
+              <span className="round-icon"><ShieldCheck aria-hidden="true" /></span>
+              <div><strong>최근 이용 기록이 없어요</strong><p>주행을 마치면 기록이 표시돼요.</p></div>
+            </SurfaceCard>
+          ) : (
+            <div className="day-record-list">
+              {stats.recentRides.map((ride) => (
+                <SurfaceCard key={ride.id} className="recent-ride-item">
+                  <span className="recent-ride-date">{formatDayHeading(ride.dateKey)}</span>
+                  <span className="recent-ride-metrics">
+                    <span>{formatMetric(ride.distanceKm, "km")}</span>
+                    <span>{formatDuration(ride.durationSeconds)}</span>
+                    <span>{formatFare(ride.fareAmount, ride.currencyCode)}</span>
+                  </span>
+                </SurfaceCard>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </AppShell>

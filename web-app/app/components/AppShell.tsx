@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ChevronLeft, CreditCard, History, Home, UserRound } from "lucide-react";
+import { ChevronLeft, History, Home, UserRound, Users } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/app";
 
@@ -53,7 +53,7 @@ export function BottomNavigation() {
   const items = [
     { to: ROUTES.home, label: "홈", icon: Home },
     { to: ROUTES.history, label: "이용내역", icon: History },
-    { to: ROUTES.payment, label: "결제", icon: CreditCard },
+    { to: ROUTES.friends, label: "친구", icon: Users },
     { to: ROUTES.profile, label: "내 정보", icon: UserRound },
   ];
 

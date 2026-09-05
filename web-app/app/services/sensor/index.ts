@@ -2,6 +2,7 @@ export * from "./contracts";
 export * from "./config";
 export * from "./DeckDataAdapter";
 export * from "./HelmetDataAdapter";
+export * from "./KeyboardSensorService";
 export * from "./RealSensorService";
 export * from "./SensorCoordinator";
 export * from "./SensorTransportError";

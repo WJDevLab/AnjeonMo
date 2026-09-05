@@ -5,22 +5,18 @@ import { Navigate, Route, Routes, BrowserRouter, useLocation, useNavigate } from
 import { Route as RouteIcon } from "lucide-react";
 import { useRideTelemetry } from "./hooks/useRideTelemetry";
 import { useSensorData } from "./hooks/useSensorData";
-import { LocalRideSessionService, WebSocketRideTelemetryService, readPublicRideTelemetryUrl } from "./services/ride";
-import { createRealSensorServiceFromEnv, TestScenarioSensorService, type SensorService } from "./services/sensor";
+import { addRideRecord } from "./data/rideHistoryStore";
+import { PrototypeRideSessionService, WebSocketRideTelemetryService, readPublicRideTelemetryUrl } from "./services/ride";
+import { KeyboardSensorService } from "./services/sensor";
 import { HomePage } from "./pages/HomePage";
+import { FriendDetailPage, FriendsListPage } from "./pages/FriendsPage";
 import { RidingPage } from "./pages/RidingPage";
 import { SafetyCheckPage } from "./pages/SafetyCheckPage";
 import { ScooterDetailPage, ScooterSelectionPage } from "./pages/ScooterPages";
 import { HistoryPage, PaymentPage, ProfilePage, StatisticsPage } from "./pages/UtilityPages";
 import { WelcomePage } from "./pages/WelcomePage";
 import { ROUTES } from "./config/app";
-
-function createSensorService(): SensorService {
-  const testAllowed = process.env.NEXT_PUBLIC_ENABLE_SENSOR_SCENARIOS === "true" || process.env.VITE_ENABLE_SENSOR_SCENARIOS === "true";
-  const testRequested = new URLSearchParams(window.location.search).get("sensor") === "test";
-  if (testAllowed && testRequested) return new TestScenarioSensorService({ enabled: true });
-  return createRealSensorServiceFromEnv();
-}
+import type { ScooterDetails } from "./types/domain";
 
 export function ScooterApp() {
   const mounted = useSyncExternalStore(
@@ -47,12 +43,13 @@ export function ScooterApp() {
 
 function AppRuntime() {
   const navigate = useNavigate();
-  const [sensorService] = useState<SensorService>(() => createSensorService());
-  const [rideService] = useState(() => new LocalRideSessionService());
+  const [sensorService] = useState(() => new KeyboardSensorService({ enabled: true }));
+  const [rideService] = useState(() => new PrototypeRideSessionService());
   const [rideStream] = useState(() => {
     const url = readPublicRideTelemetryUrl();
     return url ? new WebSocketRideTelemetryService({ url }) : null;
   });
+  const [selectedScooter, setSelectedScooter] = useState<ScooterDetails | null>(null);
   const sensor = useSensorData(sensorService);
   const ride = useRideTelemetry(rideService);
 
@@ -72,25 +69,53 @@ function AppRuntime() {
 
   useEffect(() => () => {
     void sensorService.disconnect();
-    if ("dispose" in sensorService && typeof sensorService.dispose === "function") sensorService.dispose();
     void rideService.disconnect();
     void rideStream?.disconnect();
   }, [rideService, rideStream, sensorService]);
 
-  const startSafetyCheck = useCallback(() => {
-    const connectionAttempt = sensor.connect();
+  const startSafetyCheck = useCallback((scooter: ScooterDetails) => {
+    setSelectedScooter(scooter);
     navigate(ROUTES.safetyCheck);
-    return connectionAttempt.catch(() => {
-      // The safety page distinguishes configuration, permission, and connection failures.
-    });
-  }, [navigate, sensor]);
+  }, [navigate]);
 
   const startConfirmedRide = useCallback(() => {
-    rideService.confirmStarted(null);
-    if (sensorService instanceof TestScenarioSensorService) sensorService.markRiding();
+    let fareConfig: { baseFareAmount: number; perMinuteFareAmount: number; currencyCode: string } | undefined;
+    if (
+      selectedScooter &&
+      selectedScooter.baseFareAmount !== null &&
+      selectedScooter.perMinuteFareAmount !== null &&
+      selectedScooter.currencyCode !== null
+    ) {
+      fareConfig = {
+        baseFareAmount: selectedScooter.baseFareAmount,
+        perMinuteFareAmount: selectedScooter.perMinuteFareAmount,
+        currencyCode: selectedScooter.currencyCode,
+      };
+    }
+    rideService.confirmStarted(selectedScooter?.id ?? null, fareConfig);
+    sensorService.markRiding();
     if (rideStream) void rideStream.connect().catch(() => undefined);
     navigate(ROUTES.riding, { replace: true });
-  }, [navigate, rideService, rideStream, sensorService]);
+  }, [navigate, rideService, rideStream, selectedScooter, sensorService]);
+
+  const endRide = useCallback(() => {
+    const snapshot = rideService.getSnapshot();
+    if (snapshot.startedAt !== null) {
+      addRideRecord({
+        startedAt: snapshot.startedAt,
+        endedAt: new Date().toISOString(),
+        distanceKm: snapshot.distanceKm ?? 0,
+        durationSeconds: snapshot.elapsedSeconds ?? 0,
+        fareAmount: snapshot.fareAmount ?? 0,
+        currencyCode: snapshot.currencyCode ?? "KRW",
+        multiRiderBlockedCount: 0,
+        helmetBlockedCount: 0,
+      });
+    }
+    rideService.endConfirmedRide();
+    setSelectedScooter(null);
+    navigate(ROUTES.history, { replace: true });
+  }, [navigate, rideService]);
 
   return (
     <>
@@ -101,11 +126,13 @@ function AppRuntime() {
         <Route path={ROUTES.scooters} element={<ScooterSelectionPage />} />
         <Route path={ROUTES.scooterDetail} element={<ScooterDetailPage onStartSafetyCheck={startSafetyCheck} />} />
         <Route path={ROUTES.safetyCheck} element={<SafetyCheckPage service={sensorService} snapshot={sensor.snapshot} connect={sensor.connect} onSuccess={startConfirmedRide} />} />
-        <Route path={ROUTES.riding} element={<RidingPage ride={ride} sensor={sensor.snapshot} />} />
+        <Route path={ROUTES.riding} element={<RidingPage ride={ride} sensor={sensor.snapshot} scooter={selectedScooter} onEndRide={endRide} />} />
         <Route path={ROUTES.history} element={<HistoryPage />} />
         <Route path={ROUTES.payment} element={<PaymentPage />} />
         <Route path={ROUTES.profile} element={<ProfilePage />} />
         <Route path={ROUTES.statistics} element={<StatisticsPage />} />
+        <Route path={ROUTES.friends} element={<FriendsListPage />} />
+        <Route path={ROUTES.friendDetail} element={<FriendDetailPage />} />
         <Route path="*" element={<Navigate to={ROUTES.welcome} replace />} />
       </Routes>
     </>

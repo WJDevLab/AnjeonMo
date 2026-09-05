@@ -198,6 +198,28 @@ This README describes the **features and structure of the final project that we 
 
 ---
 
+# 🖥️ Prototype Rebuild (This Branch)
+
+After the camp, I rebuilt part of this web app myself with AI coding assistance (Claude) so the original idea could be clicked through and tried, not just described. Because of that, this version differs from the original camp build in a few ways:
+
+- **No Arduino is connected.** The original pressure-sensor hardware for the deck and helmet isn't wired up here, so the Safety Check screen simulates sensor input with the keyboard instead:
+  - Keys **1 / 2 / 3** simulate one foot / two feet (normal) / three-or-more feet on the deck
+  - Key **4** simulates the helmet being worn
+  - Reaching the "normal" combination automatically advances to the next step, the same way the real sensor flow was designed to
+- **Nearby scooters, ride history, and friends are mock data.** There's no backend yet, so these are placeholder values used to demonstrate the screens, not real usage records.
+
+Screenshots of the current prototype:
+
+| Home — nearby map | Safety check — foot step | Safety check — helmet step |
+|---|---|---|
+| ![Home map](screenshots/home-map.png) | ![Foot step](screenshots/safety-foot.png) | ![Helmet step](screenshots/safety-helmet.png) |
+
+| Riding | Friends | Statistics |
+|---|---|---|
+| ![Riding](screenshots/riding.png) | ![Friends](screenshots/friend-detail.png) | ![Statistics](screenshots/statistics.png) |
+
+---
+
 ## 🏕️ Project
 
 **Kakao AI Rookie Camp**
@@ -405,6 +427,28 @@ A team project created to improve the safety of shared electric scooter users an
 따라서 현재 이 GitHub Repository에 업로드된 코드에서는 README에 설명된 기능 중 상당수가 정상적으로 구현되어 있지 않거나 동작하지 않을 수 있습니다.
 
 이 README는 &#x2A;*캠프 당시 실제로 기획하고 구현했던 최종 프로젝트의 기능과 구조를 기준으로 작성했습니다.**
+
+---
+
+# 🖥️ 프로토타입 재구현 (이 브랜치)
+
+캠프가 끝난 뒤, 설명만으로 남기지 않고 실제로 눌러볼 수 있게 만들어보고 싶어서 AI 코딩 도구(Claude)의 도움을 받아 웹앱 일부를 직접 다시 구현했습니다. 그래서 이 버전은 캠프 당시 실제 버전과 다음과 같은 차이가 있습니다.
+
+- **아두이노가 연결되어 있지 않습니다.** 발판·헬멧의 압력 센서 하드웨어가 없기 때문에, 안전 확인 화면에서는 키보드 입력으로 센서 신호를 대신 흉내냅니다.
+  - **1 / 2 / 3번 키** → 발판 위 발이 하나 / 둘(정상) / 셋 이상인 상태를 시뮬레이션
+  - **4번 키** → 헬멧을 착용한 상태를 시뮬레이션
+  - "정상" 조합에 도달하면 실제 센서 흐름과 동일하게 다음 단계로 자동 진행됩니다
+- **주변 킥보드, 이용내역, 친구 정보는 임의로 만든 데이터입니다.** 아직 백엔드가 없어서, 화면 동작을 보여주기 위한 예시 값이며 실제 이용 기록이 아닙니다.
+
+현재 프로토타입 화면입니다:
+
+| 홈 — 주변 지도 | 안전 확인 — 발판 단계 | 안전 확인 — 헬멧 단계 |
+|---|---|---|
+| ![홈 지도](screenshots/home-map.png) | ![발판 단계](screenshots/safety-foot.png) | ![헬멧 단계](screenshots/safety-helmet.png) |
+
+| 주행 중 | 친구 | 주행 통계 |
+|---|---|---|
+| ![주행 중](screenshots/riding.png) | ![친구](screenshots/friend-detail.png) | ![주행 통계](screenshots/statistics.png) |
 
 ---
 

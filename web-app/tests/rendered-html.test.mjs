@@ -32,9 +32,9 @@ test("클라이언트 경로도 동일한 앱 셸로 제공한다", async () => 
 });
 
 test("안전 게이트와 빈 데이터 원칙을 소스에 유지한다", async () => {
-  const [sensorTypes, safetyHook, emptyData, mapSource, packageJson] = await Promise.all([
+  const [sensorTypes, safetyCheckPage, emptyData, mapSource, packageJson] = await Promise.all([
     readFile(new URL("../app/types/sensor.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/hooks/useSafetyCheck.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/pages/SafetyCheckPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/types/domain.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/components/LocationMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
@@ -43,9 +43,9 @@ test("안전 게이트와 빈 데이터 원칙을 소스에 유지한다", async
   for (const status of ["notWorn", "sensorUnavailable", "stale", "multiplePressureRegions", "multipleRiderSuspected", "attentionRequired", "success", "riding"]) {
     assert.match(sensorTypes, new RegExp(`\\b${status}\\b`));
   }
-  assert.match(safetyHook, /DEFAULT_SAFETY_STABLE_DURATION_MS\s*=\s*2_500/);
-  assert.match(safetyHook, /helmetStatus\s*===\s*"worn"/);
-  assert.match(safetyHook, /footDetectionStatus\s*===\s*"normal"/);
+  assert.match(safetyCheckPage, /ADVANCE_DELAY_MS\s*=\s*800/);
+  assert.match(safetyCheckPage, /helmetStatus\s*===\s*"worn"/);
+  assert.match(safetyCheckPage, /footDetectionStatus\s*===\s*"normal"/);
   assert.match(emptyData, /batteryPercent:\s*null/);
   assert.match(emptyData, /rideCount:\s*null/);
   assert.match(mapSource, /https:\/\/tile\.openstreetmap\.org\/\{z\}\/\{x\}\/\{y\}\.png/);
