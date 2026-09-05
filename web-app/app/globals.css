@@ -1884,6 +1884,680 @@ svg {
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* Prototype keyboard-sensor controls */
+.prototype-badge {
+  margin-bottom: 14px;
+  padding: 9px 12px;
+  border: 1px dashed #c9c8ee;
+  border-radius: 10px;
+  color: #5552ba;
+  background: var(--color-secondary-soft);
+  font-size: 11px;
+  font-weight: 680;
+  text-align: center;
+}
+
+.step-track {
+  display: flex;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.step-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-tertiary);
+}
+
+.step-number {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-disabled);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.step-number svg {
+  width: 15px;
+  height: 15px;
+}
+
+.step-label {
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  margin: 0 8px;
+  background: var(--color-disabled);
+}
+
+.step-node.is-active {
+  color: var(--color-primary-strong);
+}
+
+.step-node.is-active .step-number {
+  background: var(--color-primary);
+}
+
+.step-node.is-done {
+  color: var(--color-text-secondary);
+}
+
+.step-node.is-done .step-number {
+  background: var(--color-primary);
+}
+
+.key-hint-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.key-hint {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.key-hint kbd {
+  display: inline-flex;
+  min-width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: var(--color-surface-subtle);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.key-hint span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 640;
+  text-align: center;
+}
+
+.key-hint.is-target {
+  border-color: #cfe0ff;
+  background: var(--color-primary-soft);
+}
+
+.key-hint.is-target kbd {
+  border-color: #bcd2ff;
+  color: var(--color-primary);
+  background: #fff;
+}
+
+.key-hint.is-target span {
+  color: var(--color-primary-strong);
+}
+
+.key-hint.is-warning {
+  border-color: #f5d6b5;
+  background: var(--color-attention-soft);
+}
+
+.key-hint.is-warning kbd {
+  border-color: #f0c48e;
+  color: var(--color-attention);
+  background: #fff;
+}
+
+.key-hint.is-warning span {
+  color: var(--color-attention);
+}
+
+/* Scooter selection list */
+.scooter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.scooter-list-item {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  padding: 14px 15px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  text-align: left;
+}
+
+.scooter-list-item > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-tertiary);
+}
+
+.scooter-list-id {
+  padding: 3px 8px;
+  border-radius: 7px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 11px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+.scooter-list-body strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.scooter-list-body small {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.scooter-list-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.scooter-list-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scooter-list-metrics svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-tertiary);
+}
+
+/* Riding: battery meter + end-ride action */
+.battery-meter-card {
+  margin-top: 10px;
+  padding: 15px;
+}
+
+.battery-meter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.battery-meter-header svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary);
+}
+
+.battery-meter-header span {
+  flex: 1;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.battery-meter-header strong {
+  font-size: 15px;
+  font-weight: 760;
+}
+
+.battery-meter-track {
+  height: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+}
+
+.battery-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  transition: width 600ms ease;
+}
+
+.battery-meter-fill.is-warning {
+  background: var(--color-attention);
+}
+
+.battery-meter-fill.is-critical {
+  background: var(--color-error);
+}
+
+.end-ride-button {
+  color: var(--color-error);
+  border-color: #ffd4d9;
+  background: var(--color-error-soft);
+}
+
+/* History: calendar + daily records */
+.history-content {
+  padding-top: 4px;
+}
+
+.day-record-list,
+.friend-ride-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.day-record-item {
+  padding: 14px 16px;
+}
+
+.day-record-row {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.day-record-row > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+}
+
+.day-record-row svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+}
+
+.day-record-row strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.day-record-safety {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-attention);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.day-record-safety svg {
+  width: 16px;
+  height: 16px;
+}
+
+.recent-ride-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 15px;
+}
+
+.recent-ride-date {
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.recent-ride-metrics {
+  display: flex;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.trend-chart-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.calendar {
+  padding: 14px 12px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 10px;
+}
+
+.calendar-header strong {
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.calendar-nav {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.calendar-nav:hover {
+  background: var(--color-surface-subtle);
+}
+
+.calendar-nav svg {
+  width: 18px;
+  height: 18px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 2px;
+  color: var(--color-text-tertiary);
+  font-size: 10.5px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding: 4px 2px 2px;
+}
+
+.calendar-cell {
+  position: relative;
+  display: flex;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--color-text);
+  background: transparent;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.calendar-cell.is-empty {
+  cursor: default;
+}
+
+.calendar-cell.is-today {
+  color: var(--color-primary-strong);
+  font-weight: 760;
+}
+
+.calendar-cell.is-selected {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.calendar-dot {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  transform: translateX(-50%);
+}
+
+.calendar-cell.is-selected .calendar-dot {
+  background: #fff;
+}
+
+/* Monthly trend bar chart */
+.trend-chart {
+  padding: 18px 16px 14px;
+}
+
+.trend-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 140px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+}
+
+.trend-bar-column {
+  display: flex;
+  height: 100%;
+  min-width: 26px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.trend-bar {
+  display: block;
+  width: 16px;
+  max-width: 20px;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-primary);
+}
+
+.trend-bar-label {
+  color: var(--color-text-tertiary);
+  font-size: 10px;
+}
+
+.trend-bar-value {
+  color: var(--color-primary-strong);
+  font-size: 10px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+
+/* Friends */
+.friends-intro {
+  margin: 2px 2px 14px;
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+}
+
+.friend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-list-item {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  text-align: left;
+}
+
+.friend-list-item > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-tertiary);
+}
+
+.friend-avatar {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 16px;
+  font-weight: 760;
+}
+
+.friend-avatar.is-riding {
+  color: #fff;
+  background: linear-gradient(135deg, #50a1fa, #356cf3);
+}
+
+.friend-avatar.is-large {
+  width: 58px;
+  height: 58px;
+  font-size: 20px;
+}
+
+.friend-list-body strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.friend-list-body small {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-text-secondary);
+  font-size: 11.5px;
+}
+
+.friend-status-badge {
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.friend-status-card {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  padding: 16px;
+}
+
+.friend-status-name strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 760;
+}
+
+.friend-status-name p {
+  margin-top: 3px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.friend-status-pill {
+  padding: 5px 11px;
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.friend-status-pill.is-riding {
+  color: var(--color-primary-strong);
+  background: var(--color-primary-soft);
+}
+
+.friend-ride-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding: 12px 14px;
+}
+
+.friend-ride-date {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.friend-ride-metrics {
+  display: flex;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.friend-ride-flag {
+  flex-basis: 100%;
+  color: var(--color-attention);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+/* Home: monthly summary numbers */
+.monthly-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+
+.monthly-summary-item span {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.monthly-summary-item strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 760;
+}
+
 @media (max-width: 359px) {
   .page-content { padding-right: 16px; padding-left: 16px; }
   .welcome-page { padding-right: 22px; padding-left: 22px; }

@@ -1,15 +1,22 @@
 "use client";
 
+import { useMemo } from "react";
 import { ChevronRight, Footprints, HardHat, MapPin, ShieldCheck, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell, SectionTitle, SurfaceCard, TopBar } from "../components/AppShell";
 import { LocationMap } from "../components/LocationMap";
 import { ROUTES } from "../config/app";
-import { EMPTY_MONTHLY_SUMMARY } from "../types/domain";
+import { getMonthlyAggregate } from "../data/rideHistoryStore";
+import { EMPTY_MONTHLY_SUMMARY, type MonthlySummary } from "../types/domain";
 
 export function HomePage() {
   const navigate = useNavigate();
-  const summary = EMPTY_MONTHLY_SUMMARY;
+  const summary = useMemo<MonthlySummary>(() => {
+    const now = new Date();
+    const monthly = getMonthlyAggregate(now.getFullYear(), now.getMonth());
+    if (monthly.rideCount === 0) return EMPTY_MONTHLY_SUMMARY;
+    return { rideCount: monthly.rideCount, distanceKm: monthly.totalDistanceKm, safetyCheckCount: monthly.safetyPassCount };
+  }, []);
 
   return (
     <AppShell bottomNavigation>
@@ -77,12 +84,18 @@ export function HomePage() {
             action={<button className="text-action" type="button" onClick={() => navigate(ROUTES.statistics)}>자세히 보기 <ChevronRight aria-hidden="true" /></button>}
           >이번 달 이용 요약</SectionTitle>
           <SurfaceCard className="monthly-card">
-            {summary.rideCount === null && summary.distanceKm === null && summary.safetyCheckCount === null ? (
+            {summary.rideCount === null ? (
               <div className="empty-inline">
                 <span className="round-icon"><ShieldCheck aria-hidden="true" /></span>
                 <div><strong>아직 이번 달 주행 기록이 없어요</strong><p>주행 후 기록을 확인할 수 있어요</p></div>
               </div>
-            ) : null}
+            ) : (
+              <div className="monthly-summary-grid">
+                <div className="monthly-summary-item"><span>주행 횟수</span><strong>{summary.rideCount}회</strong></div>
+                <div className="monthly-summary-item"><span>주행 거리</span><strong>{summary.distanceKm}km</strong></div>
+                <div className="monthly-summary-item"><span>안전 점검</span><strong>{summary.safetyCheckCount}회</strong></div>
+              </div>
+            )}
           </SurfaceCard>
         </section>
       </div>

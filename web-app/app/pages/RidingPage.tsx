@@ -1,14 +1,29 @@
 "use client";
 
-import { Bluetooth, Clock3, Gauge, MapPinned, RadioTower, ShieldCheck, WalletCards } from "lucide-react";
+import { BatteryMedium, Bluetooth, Clock3, MapPinned, RadioTower, ShieldCheck, Square, WalletCards } from "lucide-react";
 import { AppShell, SectionTitle, SurfaceCard, TopBar } from "../components/AppShell";
+import type { ScooterDetails } from "../types/domain";
 import type { RideTelemetry } from "../types/ride";
 import type { SensorSnapshot } from "../types/sensor";
 import { formatDuration, formatFare, formatMetric } from "../utils/format";
 
-export function RidingPage({ ride, sensor }: { ride: RideTelemetry; sensor: SensorSnapshot }) {
+interface RidingPageProps {
+  ride: RideTelemetry;
+  sensor: SensorSnapshot;
+  scooter: ScooterDetails | null;
+  onEndRide(): void;
+}
+
+function estimateBatteryPercent(startBattery: number | null, elapsedSeconds: number | null): number | null {
+  if (startBattery === null) return null;
+  const elapsedMinutes = elapsedSeconds === null ? 0 : Math.floor(elapsedSeconds / 60);
+  return Math.max(0, startBattery - Math.floor(elapsedMinutes / 3));
+}
+
+export function RidingPage({ ride, sensor, scooter, onEndRide }: RidingPageProps) {
   const helmetConnected = sensor.helmetConnectionStatus === "connected";
   const deckConnected = sensor.deckConnectionStatus === "connected";
+  const batteryPercent = estimateBatteryPercent(scooter?.batteryPercent ?? null, ride.elapsedSeconds);
 
   return (
     <AppShell>
@@ -32,6 +47,22 @@ export function RidingPage({ ride, sensor }: { ride: RideTelemetry; sensor: Sens
           <SurfaceCard className="ride-metric-card"><WalletCards aria-hidden="true" /><span>현재 요금</span><strong>{formatFare(ride.fareAmount, ride.currencyCode)}</strong></SurfaceCard>
         </div>
 
+        <SurfaceCard className="battery-meter-card">
+          <div className="battery-meter-header">
+            <BatteryMedium aria-hidden="true" />
+            <span>잔여 배터리</span>
+            <strong>{batteryPercent === null ? "—" : `${batteryPercent}%`}</strong>
+          </div>
+          {batteryPercent !== null ? (
+            <div className="battery-meter-track">
+              <div
+                className={`battery-meter-fill ${batteryPercent <= 15 ? "is-critical" : batteryPercent <= 30 ? "is-warning" : ""}`}
+                style={{ width: `${batteryPercent}%` }}
+              />
+            </div>
+          ) : null}
+        </SurfaceCard>
+
         <section className="content-section">
           <SectionTitle>실시간 연결 상태</SectionTitle>
           <SurfaceCard className="connection-list">
@@ -40,10 +71,12 @@ export function RidingPage({ ride, sensor }: { ride: RideTelemetry; sensor: Sens
           </SurfaceCard>
         </section>
 
-        <SurfaceCard className="ride-note-card">
-          <Gauge aria-hidden="true" />
-          <div><strong>거리와 요금은 실제 데이터만 표시해요</strong><p>주행 서버와 요금 정책이 연결되기 전에는 임의의 값을 계산하지 않아요.</p></div>
-        </SurfaceCard>
+        <div className="sticky-action-spacer" />
+      </div>
+      <div className="sticky-action">
+        <button type="button" className="secondary-button end-ride-button" onClick={onEndRide}>
+          <Square aria-hidden="true" /> 이용 종료
+        </button>
       </div>
     </AppShell>
   );

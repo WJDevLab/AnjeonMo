@@ -137,7 +137,7 @@ export class TestScenarioSensorService implements SensorService {
     this.emit();
   }
 
-  private publish(patch: Partial<SensorSnapshot>): void {
+  protected publish(patch: Partial<SensorSnapshot>): void {
     const next = { ...this.snapshot, ...patch };
     next.connectionStatus = aggregate(
       next.helmetConnectionStatus,

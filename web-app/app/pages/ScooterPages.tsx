@@ -1,13 +1,23 @@
 "use client";
 
-import { BatteryMedium, ChevronRight, Footprints, Gauge, MapPin, RadioTower, WalletCards } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { BatteryMedium, ChevronRight, Footprints, Gauge, MapPin, WalletCards } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AppShell, PrimaryButton, SectionTitle, SurfaceCard, TopBar } from "../components/AppShell";
 import { LocationMap } from "../components/LocationMap";
 import { ScooterIllustration } from "../components/ScooterIllustration";
+import { listMockScooters, type MockScooterListItem } from "../data/mockScooters";
+import { ROUTES } from "../config/app";
 import { EMPTY_SCOOTER, type ScooterDetails } from "../types/domain";
+import { formatFare } from "../utils/format";
 
 export function ScooterSelectionPage() {
+  const navigate = useNavigate();
+  const scooters = listMockScooters();
+
+  function selectScooter(scooter: MockScooterListItem) {
+    navigate(ROUTES.scooterDetail, { state: { scooter } });
+  }
+
   return (
     <AppShell>
       <TopBar title="킥보드 선택" back />
@@ -16,21 +26,33 @@ export function ScooterSelectionPage() {
         <LocationMap />
         <section className="content-section">
           <SectionTitle>주변 킥보드</SectionTitle>
-          <SurfaceCard className="empty-state-card">
-            <span className="round-icon"><RadioTower aria-hidden="true" /></span>
-            <h2>표시할 킥보드가 없어요</h2>
-            <p>위치 권한과 대여 데이터 연결 상태를 확인해 주세요.</p>
-          </SurfaceCard>
+          <div className="scooter-list">
+            {scooters.map((scooter) => (
+              <button key={scooter.id} type="button" className="scooter-list-item" onClick={() => selectScooter(scooter)}>
+                <span className="scooter-list-id">{scooter.id}</span>
+                <span className="scooter-list-body">
+                  <strong>{scooter.modelName}</strong>
+                  <small>{scooter.distanceFromUserM}m 거리</small>
+                </span>
+                <span className="scooter-list-metrics">
+                  <span><BatteryMedium aria-hidden="true" />{scooter.batteryPercent}%</span>
+                  <span><Gauge aria-hidden="true" />{scooter.estimatedRangeKm}km</span>
+                </span>
+                <ChevronRight aria-hidden="true" />
+              </button>
+            ))}
+          </div>
         </section>
       </div>
     </AppShell>
   );
 }
 
-export function ScooterDetailPage({ onStartSafetyCheck }: { onStartSafetyCheck(): Promise<void> }) {
+export function ScooterDetailPage({ onStartSafetyCheck }: { onStartSafetyCheck(scooter: ScooterDetails): void }) {
   const location = useLocation();
   const scooter = ((location.state as { scooter?: ScooterDetails } | null)?.scooter) ?? EMPTY_SCOOTER;
   const ready = scooter.id !== null;
+  const perMinuteLabel = scooter.perMinuteFareAmount === null ? "—" : `${formatFare(scooter.perMinuteFareAmount, scooter.currencyCode)}/분`;
 
   return (
     <AppShell className="detail-stage">
@@ -48,9 +70,9 @@ export function ScooterDetailPage({ onStartSafetyCheck }: { onStartSafetyCheck()
           <div className="metric-cell"><Gauge aria-hidden="true" /><span>예상 주행거리</span><strong>{scooter.estimatedRangeKm === null ? "—" : `${scooter.estimatedRangeKm} km`}</strong></div>
         </SurfaceCard>
         <SurfaceCard className="metric-grid-card">
-          <div className="metric-cell"><WalletCards aria-hidden="true" /><span>기본 요금</span><strong>{scooter.baseFareAmount === null ? "—" : "연동 데이터"}</strong></div>
+          <div className="metric-cell"><WalletCards aria-hidden="true" /><span>기본 요금</span><strong>{formatFare(scooter.baseFareAmount, scooter.currencyCode)}</strong></div>
           <div className="metric-divider" />
-          <div className="metric-cell"><WalletCards aria-hidden="true" /><span>분당 요금</span><strong>{scooter.perMinuteFareAmount === null ? "—" : "연동 데이터"}</strong></div>
+          <div className="metric-cell"><WalletCards aria-hidden="true" /><span>분당 요금</span><strong>{perMinuteLabel}</strong></div>
         </SurfaceCard>
         <SurfaceCard className="sensor-explainer">
           <div className="card-title-row"><span className="round-icon"><Footprints aria-hidden="true" /></span><div><h2>압력센서 안전 시스템</h2><p>데크의 발 위치와 탑승 상태를 확인해요</p></div></div>
@@ -62,7 +84,7 @@ export function ScooterDetailPage({ onStartSafetyCheck }: { onStartSafetyCheck()
         <div className="sticky-action-spacer" />
       </div>
       <div className="sticky-action">
-        <PrimaryButton disabled={!ready} onClick={() => void onStartSafetyCheck()} ariaDescribedBy={!ready ? "ride-start-reason" : undefined}>
+        <PrimaryButton disabled={!ready} onClick={() => onStartSafetyCheck(scooter)} ariaDescribedBy={!ready ? "ride-start-reason" : undefined}>
           탑승 시작 <ChevronRight aria-hidden="true" />
         </PrimaryButton>
         {!ready ? <p id="ride-start-reason">킥보드 정보를 불러온 뒤 시작할 수 있어요</p> : null}
