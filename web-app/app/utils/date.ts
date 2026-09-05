@@ -22,3 +22,8 @@ export function addMonths(date: Date, delta: number): Date {
 export function isSameDay(a: Date, b: Date): boolean {
   return toDateKey(a) === toDateKey(b);
 }
+
+export function formatDayHeading(dateKey: string): string {
+  const [, month, day] = dateKey.split("-").map(Number);
+  return `${month}월 ${day}일 기록`;
+}

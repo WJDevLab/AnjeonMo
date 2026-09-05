@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, HardHat } from "lucide-react";
 import { addMonths, toDateKey } from "../utils/date";
 
 interface CalendarProps {
@@ -64,7 +64,7 @@ export function Calendar({ markedDates, selectedDate, onSelectDate }: CalendarPr
               onClick={() => onSelectDate(dateKey)}
             >
               <span>{cell.getDate()}</span>
-              {hasRecord ? <span className="calendar-dot" aria-hidden="true" /> : null}
+              {hasRecord ? <HardHat className="calendar-mark" aria-hidden="true" /> : null}
             </button>
           );
         })}

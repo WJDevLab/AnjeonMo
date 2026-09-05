@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { LocateFixed, MapPin } from "lucide-react";
-import type { CircleMarker, Map as LeafletMap } from "leaflet";
+import { useNavigate } from "react-router-dom";
+import type { CircleMarker, Map as LeafletMap, Marker, PopupEvent } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { listMockScooters, type MockScooterListItem } from "../data/mockScooters";
+import { ROUTES } from "../config/app";
+import { formatFare } from "../utils/format";
 
 type LocationStatus = "idle" | "requesting" | "ready" | "permission-denied" | "unavailable" | "timeout" | "unsupported" | "error";
 type VerifiedLocation = { latitude: number; longitude: number };
@@ -41,12 +45,70 @@ function isValidLocation(latitude: number, longitude: number) {
   return Number.isFinite(latitude) && Number.isFinite(longitude) && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
 }
 
+/**
+ * There is no real nearby-scooter API yet, so markers are placed around the
+ * user's real location using each mock scooter's own distanceFromUserM, at a
+ * bearing hashed from its id — stable across re-renders, no fake API call.
+ */
+function destinationPoint(lat: number, lng: number, distanceMeters: number, bearingDegrees: number): [number, number] {
+  const earthRadiusMeters = 6_371_000;
+  const bearingRad = (bearingDegrees * Math.PI) / 180;
+  const lat1 = (lat * Math.PI) / 180;
+  const lng1 = (lng * Math.PI) / 180;
+  const angularDistance = distanceMeters / earthRadiusMeters;
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(angularDistance) + Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(bearingRad),
+  );
+  const lng2 =
+    lng1 +
+    Math.atan2(
+      Math.sin(bearingRad) * Math.sin(angularDistance) * Math.cos(lat1),
+      Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2),
+    );
+  return [(lat2 * 180) / Math.PI, (((lng2 * 180) / Math.PI + 540) % 360) - 180];
+}
+
+function stableBearingForId(id: string): number {
+  let hash = 0;
+  for (let index = 0; index < id.length; index += 1) {
+    hash = (hash * 31 + id.charCodeAt(index)) >>> 0;
+  }
+  return hash % 360;
+}
+
+function scooterPosition(center: VerifiedLocation, scooter: MockScooterListItem): [number, number] {
+  return destinationPoint(center.latitude, center.longitude, scooter.distanceFromUserM, stableBearingForId(scooter.id ?? ""));
+}
+
+function buildScooterPopupHtml(scooter: MockScooterListItem): string {
+  const battery = scooter.batteryPercent === null ? "—" : `${scooter.batteryPercent}%`;
+  const range = scooter.estimatedRangeKm === null ? "—" : `${scooter.estimatedRangeKm}km`;
+  const baseFare = formatFare(scooter.baseFareAmount, scooter.currencyCode);
+  const perMinute = scooter.perMinuteFareAmount === null ? "" : ` + ${formatFare(scooter.perMinuteFareAmount, scooter.currencyCode)}/분`;
+  return `
+    <div class="map-scooter-popup">
+      <span class="map-scooter-popup-id">${scooter.id}</span>
+      <strong class="map-scooter-popup-name">${scooter.modelName}</strong>
+      <div class="map-scooter-popup-metrics">
+        <span>배터리 ${battery}</span>
+        <span>${range}</span>
+      </div>
+      <div class="map-scooter-popup-fare">${baseFare}${perMinute}</div>
+      <button type="button" class="map-scooter-popup-button" data-scooter-id="${scooter.id}">운행 시작</button>
+    </div>
+  `;
+}
+
+const scooterMarkerSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M5 19h9l5-9"/><path d="M14 19V6h4"/></svg>`;
+
 export function LocationMap() {
   const headingId = useId();
   const descriptionId = useId();
+  const navigate = useNavigate();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<LeafletMap | null>(null);
   const currentLocationMarkerRef = useRef<CircleMarker | null>(null);
+  const scooterMarkersRef = useRef<Marker[]>([]);
   const requestSequenceRef = useRef(0);
   const isMountedRef = useRef(false);
   const [status, setStatus] = useState<LocationStatus>("idle");
@@ -94,6 +156,7 @@ export function LocationMap() {
   useEffect(() => {
     if (!location) {
       currentLocationMarkerRef.current = null;
+      scooterMarkersRef.current = [];
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
       return;
@@ -105,6 +168,7 @@ export function LocationMap() {
         const leaflet = await import("leaflet");
         if (cancelled || !mapContainerRef.current) return;
         const mapPosition: [number, number] = [location.latitude, location.longitude];
+        const scooters = listMockScooters();
 
         if (!mapInstanceRef.current) {
           const map = leaflet.map(mapContainerRef.current, { attributionControl: true, keyboard: true, preferCanvas: true, zoomControl: true }).setView(mapPosition, mapZoomLevel);
@@ -116,14 +180,38 @@ export function LocationMap() {
           currentLocationMarkerRef.current = leaflet.circleMarker(mapPosition, {
             color: "#ffffff", fillColor: "#397bf6", fillOpacity: 1, radius: 8, weight: 3,
           }).bindTooltip("현재 위치", { direction: "top", offset: [0, -8] }).addTo(map);
+
+          const scooterIcon = leaflet.divIcon({
+            className: "map-scooter-marker-wrapper",
+            html: `<div class="map-scooter-marker">${scooterMarkerSvg}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+          });
+          scooterMarkersRef.current = scooters.map((scooter) =>
+            leaflet
+              .marker(scooterPosition(location, scooter), { icon: scooterIcon })
+              .bindPopup(buildScooterPopupHtml(scooter))
+              .addTo(map),
+          );
+          map.on("popupopen", (event: PopupEvent) => {
+            const button = event.popup.getElement()?.querySelector<HTMLButtonElement>(".map-scooter-popup-button");
+            const scooter = scooters.find((item) => item.id === button?.dataset.scooterId);
+            if (!button || !scooter) return;
+            button.addEventListener("click", () => navigate(ROUTES.scooterDetail, { state: { scooter } }), { once: true });
+          });
         } else {
           mapInstanceRef.current.setView(mapPosition, mapZoomLevel);
           currentLocationMarkerRef.current?.setLatLng(mapPosition);
+          scooterMarkersRef.current.forEach((marker, index) => {
+            const scooter = scooters[index];
+            if (scooter) marker.setLatLng(scooterPosition(location, scooter));
+          });
         }
         window.requestAnimationFrame(() => mapInstanceRef.current?.invalidateSize());
       } catch {
         if (!cancelled && isMountedRef.current) {
           currentLocationMarkerRef.current = null;
+          scooterMarkersRef.current = [];
           mapInstanceRef.current?.remove();
           mapInstanceRef.current = null;
           setLocation(null);
@@ -133,10 +221,11 @@ export function LocationMap() {
     };
     void createOrUpdateMap();
     return () => { cancelled = true; };
-  }, [location]);
+  }, [location, navigate]);
 
   useEffect(() => () => {
     currentLocationMarkerRef.current = null;
+    scooterMarkersRef.current = [];
     mapInstanceRef.current?.remove();
     mapInstanceRef.current = null;
   }, []);
@@ -159,7 +248,7 @@ export function LocationMap() {
       </div>
       <div className="location-map__content" aria-busy={isRequesting ? "true" : "false"}>
         {isReady ? (
-          <div className="location-map__viewport" ref={mapContainerRef} role="region" aria-label="현재 위치가 표시된 지도" />
+          <div className="location-map__viewport" ref={mapContainerRef} role="region" aria-label="현재 위치와 주변 킥보드가 표시된 지도" />
         ) : (
           <div className={`location-map__state location-map__state--${status}`} role={status === "permission-denied" || status === "error" ? "alert" : "status"} aria-live={status === "permission-denied" || status === "error" ? "assertive" : "polite"}>
             <span className="location-map__state-symbol" aria-hidden="true"><MapPin /></span>

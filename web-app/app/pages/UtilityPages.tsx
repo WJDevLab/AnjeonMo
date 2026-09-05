@@ -1,20 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BarChart3, ChevronRight, Clock3, CreditCard, History, MapPinned, ShieldAlert, ShieldCheck, UserRound, Users, WalletCards } from "lucide-react";
+import { BarChart3, ChevronRight, Clock3, CreditCard, History, MapPinned, ShieldAlert, ShieldCheck, UserRound, WalletCards } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppShell, SectionTitle, SurfaceCard, TopBar } from "../components/AppShell";
 import { Calendar } from "../components/Calendar";
 import { MonthlyTrendChart } from "../components/MonthlyTrendChart";
 import { ROUTES } from "../config/app";
 import { getAllRideRecords, getMonthlyAggregate, getOverallAggregate } from "../data/rideHistoryStore";
-import { toDateKey } from "../utils/date";
+import { formatDayHeading, toDateKey } from "../utils/date";
 import { formatDuration, formatFare, formatMetric } from "../utils/format";
-
-function formatDateHeading(dateKey: string): string {
-  const [, month, day] = dateKey.split("-").map(Number);
-  return `${month}월 ${day}일 기록`;
-}
 
 export function HistoryPage() {
   const [selectedDate, setSelectedDate] = useState(() => toDateKey(new Date()));
@@ -29,7 +24,7 @@ export function HistoryPage() {
         <Calendar markedDates={markedDates} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
 
         <section className="content-section">
-          <SectionTitle>{formatDateHeading(selectedDate)}</SectionTitle>
+          <SectionTitle>{formatDayHeading(selectedDate)}</SectionTitle>
           {dayRecords.length === 0 ? (
             <SurfaceCard className="empty-state-card">
               <span className="round-icon"><History aria-hidden="true" /></span>
@@ -105,11 +100,6 @@ export function ProfilePage() {
             <span><strong>주행 통계</strong><small>이용 및 안전 기록을 확인해요</small></span>
             <ChevronRight aria-hidden="true" />
           </button>
-          <button className="menu-card" type="button" onClick={() => navigate(ROUTES.friends)}>
-            <span className="round-icon"><Users aria-hidden="true" /></span>
-            <span><strong>친구</strong><small>자녀와 친구의 이용 상태를 확인해요</small></span>
-            <ChevronRight aria-hidden="true" />
-          </button>
         </section>
       </div>
     </AppShell>
@@ -178,7 +168,7 @@ export function StatisticsPage() {
             <div className="day-record-list">
               {stats.recentRides.map((ride) => (
                 <SurfaceCard key={ride.id} className="recent-ride-item">
-                  <span className="recent-ride-date">{formatDateHeading(ride.dateKey)}</span>
+                  <span className="recent-ride-date">{formatDayHeading(ride.dateKey)}</span>
                   <span className="recent-ride-metrics">
                     <span>{formatMetric(ride.distanceKm, "km")}</span>
                     <span>{formatDuration(ride.durationSeconds)}</span>

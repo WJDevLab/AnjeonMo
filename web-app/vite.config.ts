@@ -48,7 +48,7 @@ export default defineConfig(async () => {
   // Fall back to a no-op plugin instead of failing config load outright.
   let sites = () => ({ name: "sites-vite-plugin-noop" });
   try {
-    // @ts-ignore — only resolvable on the original hosting platform, see comment above.
+    // @ts-expect-error — only resolvable on the original hosting platform, see comment above.
     ({ sites } = await import("./build/sites-vite-plugin"));
   } catch {
     // Not present outside the original hosting platform — see comment above.
